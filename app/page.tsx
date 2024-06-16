@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 
 const LandingPage = () => {
   return (
@@ -25,10 +26,12 @@ const LandingPage = () => {
               horoscope.
             </p>
           </div>
-          <img
+          <Image
             className="hidden md:block max-w-lg"
             src="/horoscope-telegram-bot.png"
             alt="Horoscope Bot"
+            width={800}
+            height={800}
           />
         </div>
       </section>
@@ -79,9 +82,9 @@ const LandingPage = () => {
                 Step 2: Choose the Day
               </h3>
               <p className="text-lg">
-                After selecting your sign, choose from options like "today,"
-                "tomorrow," or "day after tomorrow" to get the horoscope for
-                that day.
+                After selecting your sign, choose from options like
+                &quot;today,&rdquo; &quot;tomorrow,&rdquo; or &quot;day after
+                tomorrow&rdquo; to get the horoscope for that day.
               </p>
             </div>
           </div>
