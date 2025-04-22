@@ -41,7 +41,7 @@ const horoscopeUrls = {
     "https://cafeastrology.com/{sign}-daily-horoscope-day-after-tomorrow.html",
 };
 
-// Apply session middleware and ensure it is correctly typed
+// Apply session middleware
 const bot = new Telegraf<BotContext>(process.env.TELE_BOT_TOKEN as string);
 bot.use(session({ defaultSession: () => ({}) }));
 
@@ -49,7 +49,6 @@ bot.start((ctx) => ctx.reply("Welcome! Please select your zodiac sign."));
 
 Object.keys(zodiacs).forEach((zodiac) => {
   bot.command(zodiac, (ctx) => {
-    // Ensure ctx.session is initialized
     ctx.session.zodiac = zodiac as ZodiacSign;
     ctx.reply(
       `You selected ${zodiacs[zodiac as ZodiacSign]}. Please choose the day:`,
@@ -75,7 +74,13 @@ bot.action(["today", "tomorrow", "dayAfterTomorrow"], async (ctx) => {
   const url = urlTemplate.replace("{sign}", zodiac);
 
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+      },
+    });
+
     const html = response.data;
     const root = parse(html);
     const entryContent = root.querySelector(".entry-content");
@@ -92,7 +97,6 @@ bot.action(["today", "tomorrow", "dayAfterTomorrow"], async (ctx) => {
 
     await ctx.reply(formattedText);
   } catch (error: unknown) {
-    // Use 'error: unknown' to handle unknown type
     if (error instanceof Error) {
       console.error("Error fetching or processing URL:", error);
       ctx.reply("Error fetching or processing URL: " + error.message);
@@ -101,7 +105,6 @@ bot.action(["today", "tomorrow", "dayAfterTomorrow"], async (ctx) => {
       ctx.reply("Unknown error occurred.");
     }
   } finally {
-    // Reset session
     delete ctx.session.zodiac;
   }
 });
@@ -119,14 +122,11 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const update = JSON.parse(buffer.toString("utf8"));
       await bot.handleUpdate(update, res);
     } catch (error: unknown) {
-      // Use 'error: unknown' to handle unknown type
       console.error("Error handling update:", error);
-      res
-        .status(500)
-        .send(
-          "Error handling update: " +
-            (error instanceof Error ? error.message : "Unknown error")
-        );
+      res.status(500).send(
+        "Error handling update: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   } else {
     res.status(200).send("This endpoint is for handling Telegram updates.");
